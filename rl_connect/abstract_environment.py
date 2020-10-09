@@ -34,3 +34,10 @@ class AbstractEnvironment(ABC):
         Do the specified action in this environment and return the reward from doing this action.
         """
         pass
+
+    @abstractmethod
+    def is_closed(self) -> bool:
+        """
+        Return whether this environment is closed/terminated or not.
+        """
+        pass
