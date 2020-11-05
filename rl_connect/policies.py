@@ -1,10 +1,10 @@
-from rl_connect.abstract_environment import AbstractEnvironment
+from rl_connect.abstract_environment import AbstractEnvironment, Action, State
 
 from typing import Callable
 
 import numpy as np
 
-Policy = Callable[[AbstractEnvironment], int]
+Policy = Callable[[AbstractEnvironment], Action]
 
 
 def epsilon_greedy(epsilon: float, greedy_policy: Policy, seed=None) -> Policy:
@@ -22,7 +22,7 @@ def epsilon_greedy(epsilon: float, greedy_policy: Policy, seed=None) -> Policy:
     """
     generator = np.random.default_rng(seed)
 
-    def f(env: AbstractEnvironment):
+    def f(env: AbstractEnvironment) -> Action:
         if generator.uniform() <= epsilon:
             # Random
             actions = list(env.get_possible_actions())
@@ -33,7 +33,7 @@ def epsilon_greedy(epsilon: float, greedy_policy: Policy, seed=None) -> Policy:
     return f
 
 
-def greedy_action_values(action_values: Callable[[np.ndarray], np.ndarray]) -> Policy:
+def greedy_action_values(action_values: Callable[[State], np.ndarray]) -> Policy:
     """
     Create a greedy policy from an action values function.
 
@@ -45,7 +45,7 @@ def greedy_action_values(action_values: Callable[[np.ndarray], np.ndarray]) -> P
     -----------
     The new greedy action values policy
     """
-    def f(env: AbstractEnvironment):
+    def f(env: AbstractEnvironment) -> Action:
         values = action_values(env.get_state_copy())
         return np.argmax(values)
     return f
