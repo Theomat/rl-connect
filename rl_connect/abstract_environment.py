@@ -1,6 +1,5 @@
-from typing import Tuple, Iterable
 from abc import ABC, abstractmethod
-from typing import List, Callable, ClassVar, TypeVar
+from typing import List, Callable, ClassVar, TypeVar, Tuple, Iterable
 
 import numpy as np
 
