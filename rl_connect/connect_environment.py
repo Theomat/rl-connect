@@ -1,18 +1,18 @@
-from rl_connect.abstract_environment import AbstractEnvironment
+from rl_connect.abstract_environment import AbstractEnvironment, Action, State
 
-from typing import Tuple, ClassVar
+from typing import Tuple, ClassVar, List
 
 import numpy as np
 
 
 class ConnectEnvironment(AbstractEnvironment):
 
-    action_space: ClassVar[Tuple[int]] = tuple(range(7))
+    action_space: ClassVar[Tuple[Action]] = tuple(range(7))
     directions: ClassVar[Tuple[Tuple[int, int]]] = ((1, 0), (0, 1), (1, 1), (1, -1))
 
-    def __init__(self, player):
-        self.board = np.zeros((7, 6, 2), dtype=np.int)
-        self.player = player
+    def __init__(self, player: int):
+        self.board: State = np.zeros((7, 6, 2), dtype=np.int)
+        self.player: int = player
         self.reset()
 
     def reset(self):
@@ -20,24 +20,22 @@ class ConnectEnvironment(AbstractEnvironment):
         self.closed = False
         self.turn = 0
 
-    def get_state_copy(self):
+    def get_state_copy(self) -> State:
         return self.board.copy()
 
-    def get_possible_actions(self):
-        for x in ConnectEnvironment.action_space:
-            if self.board[x, -1, 0] == 0 and self.board[x, -1, 1] == 0:
-                yield x
+    def get_possible_actions(self) -> List[Action]:
+        return [x for x in ConnectEnvironment.action_space if self.board[x, -1, 0] == 0 and self.board[x, -1, 1] == 0]
 
-    def is_closed(self):
+    def is_closed(self) -> bool:
         return self.closed
 
-    def __top__(self, x):
+    def __top__(self, x: int) -> int:
         for y in range(6):
             if self.board[x, y, 0] == 0 and self.board[x, y, 1] == 0:
                 return y
         return -1
 
-    def __count_dir__(self, x, y, player, vx, vy):
+    def __count_dir__(self, x: int, y: int, player: int, vx: int, vy: int) -> int:
         count = 1
         for i in range(1, 4):
             nx, ny = x + i * vx, y + i * vy
@@ -55,7 +53,7 @@ class ConnectEnvironment(AbstractEnvironment):
 
         return count
 
-    def do_action(self, action):
+    def do_action(self, action: Action):
         if self.closed:
             raise Exception("Fatal error: game is already closed !")
         turn = self.turn
