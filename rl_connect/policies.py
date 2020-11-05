@@ -15,6 +15,7 @@ def epsilon_greedy(epsilon: float, greedy_policy: Policy, seed=None) -> Policy:
     -----------
     - **epsilon**: the chance of taking a random action
     - **greedy_policy**: the greedy policy to follow
+    - **seed**: the seed to be passed to ```numpy.random.default_rng```
 
     Return
     -----------
