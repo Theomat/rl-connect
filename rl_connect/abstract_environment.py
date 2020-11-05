@@ -4,10 +4,12 @@ from typing import List, Callable, ClassVar, TypeVar, Tuple, Iterable
 import numpy as np
 
 EnvType = TypeVar('EnvType')
+State = np.ndarray
+Action = int
 
 
 class AbstractEnvironment(ABC):
-    action_space: ClassVar[Tuple[int]] = ()
+    action_space: ClassVar[Tuple[Action]] = ()
 
     @abstractmethod
     def reset(self):
@@ -17,21 +19,21 @@ class AbstractEnvironment(ABC):
         pass
 
     @abstractmethod
-    def get_possible_actions(self) -> Iterable[int]:
+    def get_possible_actions(self) -> Iterable[Action]:
         """
         Get the list of possible actions from the current state of the environment.
         """
         pass
 
     @abstractmethod
-    def get_state_copy(self) -> np.ndarray:
+    def get_state_copy(self) -> State:
         """
         Get a state copy of this environment as a numpy array.
         """
         pass
 
     @abstractmethod
-    def do_action(self, action: int) -> float:
+    def do_action(self, action: Action) -> float:
         """
         Do the specified action in this environment and return the reward from doing this action.
         """
@@ -44,7 +46,7 @@ class AbstractEnvironment(ABC):
         """
         pass
 
-    def do_episodes(self, policy: Callable[[EnvType], int], n: int = 1) -> List[List[List[np.ndarray, float, np.ndarray]]]:
+    def do_episodes(self, policy: Callable[[EnvType], Action], n: int = 1) -> List[List[List[State, Action, float]]]:
         """
         Do one episode using the specified policy.
 
@@ -55,7 +57,7 @@ class AbstractEnvironment(ABC):
 
         Return
         -----------
-        A list of episodes, an episode is the list of (state, reward, new_state) from this episode.
+        A list of episodes, an episode is the list of (state, action, reward) from this episode.
         """
         episodes = []
         for i in range(n):
@@ -65,7 +67,7 @@ class AbstractEnvironment(ABC):
                 state = self.environment.get_state_copy()
                 action = policy(state)
                 reward = self.environment.do_action(action)
-                episode.append([state, reward, self.environment.get_state_copy()])
+                episode.append([state, action, reward])
             episodes.append(episode)
 
         return episodes
