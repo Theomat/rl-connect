@@ -1,11 +1,14 @@
 from typing import Tuple, Iterable
 from abc import ABC, abstractmethod
+from typing import List, Callable, ClassVar, TypeVar
 
 import numpy as np
 
+EnvType = TypeVar('EnvType')
+
 
 class AbstractEnvironment(ABC):
-    action_space: Tuple = ()
+    action_space: ClassVar[Tuple[int]] = ()
 
     @abstractmethod
     def reset(self):
@@ -41,3 +44,29 @@ class AbstractEnvironment(ABC):
         Return whether this environment is closed/terminated or not.
         """
         pass
+
+    def do_episodes(self, policy: Callable[[EnvType], int], n: int = 1) -> List[List[List[np.ndarray, float, np.ndarray]]]:
+        """
+        Do one episode using the specified policy.
+
+        Parameter
+        -----------
+        - **policy**: the policy to choose the action
+        - **n**: the number of episodes to run
+
+        Return
+        -----------
+        A list of episodes, an episode is the list of (state, reward, new_state) from this episode.
+        """
+        episodes = []
+        for i in range(n):
+            episode = []
+            self.environment.reset()
+            while not self.environment.is_closed():
+                state = self.environment.get_state_copy()
+                action = policy(state)
+                reward = self.environment.do_action(action)
+                episode.append([state, reward, self.environment.get_state_copy()])
+            episodes.append(episode)
+
+        return episodes
