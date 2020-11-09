@@ -1,6 +1,6 @@
 from rl_connect.abstract_environment import AbstractEnvironment, Action, State
 
-from typing import Tuple, ClassVar, List
+from typing import Tuple, ClassVar, List, Callable
 
 import numpy as np
 
@@ -13,7 +13,11 @@ class ConnectEnvironment(AbstractEnvironment):
     def __init__(self, player: int):
         self.board: State = np.zeros((7, 6, 2), dtype=np.int)
         self.player: int = player
+        self.other_player: Callable[[State, int], int] = None
         self.reset()
+
+    def attach_second_player(self, other_player: Callable[[State, int], int]) -> None:
+        self.other_player = other_player
 
     def reset(self):
         self.board[:, :, :] = 0
@@ -65,7 +69,12 @@ class ConnectEnvironment(AbstractEnvironment):
         for (vx, vy) in ConnectEnvironment.directions:
             if self.__count_dir__(action, y, turn, vx, vy) >= 4:
                 self.closed = True
+
+        reward = - 1 / 42
         if self.closed:
-            return 1 if self.player == turn else -1
+            reward = 1 if self.player == turn else -1
         self.closed |= np.sum(self.board) == 42
-        return 0
+
+        if self.other_player and self.turn != self.player:
+            self.do_action(self.other_player(self.get_state_copy(), self.turn))
+        return reward
