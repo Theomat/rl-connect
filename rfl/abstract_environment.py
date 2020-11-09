@@ -3,7 +3,7 @@ from typing import List, Callable, ClassVar, TypeVar, Tuple, Iterable
 
 import numpy as np
 
-from tqdm import trange
+from tqdm.auto import trange
 
 EnvType = TypeVar('EnvType')
 State = np.ndarray
