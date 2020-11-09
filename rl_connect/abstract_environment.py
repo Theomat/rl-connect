@@ -6,6 +6,8 @@ import numpy as np
 EnvType = TypeVar('EnvType')
 State = np.ndarray
 Action = int
+Transition = Tuple[State, Action, float]
+Episode = List[Transition]
 
 
 class AbstractEnvironment(ABC):
@@ -46,7 +48,7 @@ class AbstractEnvironment(ABC):
         """
         pass
 
-    def do_episodes(self, policy: Callable[[EnvType], Action], n: int = 1) -> List[List[List[State, Action, float]]]:
+    def do_episodes(self, policy: Callable[[EnvType], Action], n: int = 1) -> List[Episode]:
         """
         Do one episode using the specified policy.
 
