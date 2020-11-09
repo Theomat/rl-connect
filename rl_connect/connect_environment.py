@@ -14,6 +14,8 @@ class ConnectEnvironment(AbstractEnvironment):
         self.board: State = np.zeros((7, 6, 2), dtype=np.int)
         self.player: int = player
         self.other_player: Callable[[State, int], int] = None
+        self.play_reward = -1 / 42
+        self.win_reward = 1
         self.reset()
 
     def attach_second_player(self, other_player: Callable[[State, int], int]) -> None:
@@ -70,9 +72,9 @@ class ConnectEnvironment(AbstractEnvironment):
             if self.__count_dir__(action, y, turn, vx, vy) >= 4:
                 self.closed = True
 
-        reward = - 1 / 42
+        reward = self.play_reward()
         if self.closed:
-            reward = 1 if self.player == turn else -1
+            reward = (1 if self.player == turn else -1) * self.win_reward
         self.closed |= np.sum(self.board) == 42
 
         if self.other_player and self.turn != self.player:
