@@ -1,4 +1,4 @@
-from rl_connect.abstract_environment import AbstractEnvironment, Action, State
+from rfl.abstract_environment import AbstractEnvironment, Action, State
 
 from typing import Tuple, ClassVar, List, Callable
 
@@ -18,7 +18,7 @@ class ConnectEnvironment(AbstractEnvironment):
         self.win_reward = 1
         self.reset()
 
-    def attach_second_player(self, other_player: Callable[[State, int], int]) -> None:
+    def attach_second_player(self, other_player: Callable[[AbstractEnvironment, int], int]) -> None:
         self.other_player = other_player
 
     def reset(self):
@@ -28,6 +28,15 @@ class ConnectEnvironment(AbstractEnvironment):
 
     def get_state_copy(self) -> State:
         return self.board.copy()
+
+    def get_state_with_action(self, state: State, action: Action) -> State:
+        tmp, self.board = self.board, state
+        y = self.__top__(action)
+        self.board = tmp
+        if y == -1:
+            raise Exception("Fatal error: invalid action !")
+        state[action, y, self.turn] = 1
+        return state
 
     def get_possible_actions(self) -> List[Action]:
         return [x for x in ConnectEnvironment.action_space if self.board[x, -1, 0] == 0 and self.board[x, -1, 1] == 0]
@@ -59,7 +68,7 @@ class ConnectEnvironment(AbstractEnvironment):
 
         return count
 
-    def do_action(self, action: Action):
+    def do_action(self, action: Action) -> float:
         if self.closed:
             raise Exception("Fatal error: game is already closed !")
         turn = self.turn
@@ -72,11 +81,11 @@ class ConnectEnvironment(AbstractEnvironment):
             if self.__count_dir__(action, y, turn, vx, vy) >= 4:
                 self.closed = True
 
-        reward = self.play_reward()
+        reward = self.play_reward
         if self.closed:
             reward = (1 if self.player == turn else -1) * self.win_reward
         self.closed |= np.sum(self.board) == 42
 
-        if self.other_player and self.turn != self.player:
-            self.do_action(self.other_player(self.get_state_copy(), self.turn))
+        if not self.closed and self.other_player and self.turn != self.player:
+            self.do_action(self.other_player(self, self.turn))
         return reward

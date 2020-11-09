@@ -3,6 +3,8 @@ from typing import List, Callable, ClassVar, TypeVar, Tuple, Iterable
 
 import numpy as np
 
+from tqdm import trange
+
 EnvType = TypeVar('EnvType')
 State = np.ndarray
 Action = int
@@ -35,6 +37,13 @@ class AbstractEnvironment(ABC):
         pass
 
     @abstractmethod
+    def get_state_with_action(self, state: State, action: Action) -> State:
+        """
+        Get a state copy of this environment with the specified action taken as a numpy array.
+        """
+        pass
+
+    @abstractmethod
     def do_action(self, action: Action) -> float:
         """
         Do the specified action in this environment and return the reward from doing this action.
@@ -62,13 +71,13 @@ class AbstractEnvironment(ABC):
         A list of episodes, an episode is the list of (state, action, reward) from this episode.
         """
         episodes = []
-        for i in range(n):
+        for i in trange(n, desc="episode"):
             episode = []
-            self.environment.reset()
-            while not self.environment.is_closed():
-                state = self.environment.get_state_copy()
-                action = policy(state)
-                reward = self.environment.do_action(action)
+            self.reset()
+            while not self.is_closed():
+                state = self.get_state_copy()
+                action = policy(self)
+                reward = self.do_action(action)
                 episode.append([state, action, reward])
             episodes.append(episode)
 

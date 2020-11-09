@@ -1,24 +1,24 @@
-from rl_connect.abstract_environment import AbstractEnvironment, Episode
-from rl_connect.policies import Policy, greedy_action_values
+from rfl.abstract_environment import AbstractEnvironment, Episode, Action, State
+from rfl.policies import Policy
 
 from abc import ABC, abstractmethod
 from typing import List, Tuple
 
-from tf.keras import Model
-from tf.keras.callbaks import History
+from tensorflow.keras import Model
+from tensorflow.keras.callbacks import History
 
 import numpy as np
 
 
-class AsbtractModelLearner(ABC):
+class AbstractModelLearner(ABC):
     def __init__(self, env: AbstractEnvironment, model: Model, memory_size: int):
         self.env: AbstractEnvironment = env
         self.model: Model = model
         self._memory: List[Tuple[np.ndarray, np.ndarray]] = []
         self.memory_size: int = memory_size
         self.metrics: dict[str, float] = {
-            "reward": [],
-            "episode_length": []
+            "episode.reward": [],
+            "episode.length": []
         }
 
     @abstractmethod
@@ -62,14 +62,36 @@ class AsbtractModelLearner(ABC):
         pass
 
     def train(self, sample_size: int, **kwargs) -> History:
-        dataset = np.random.choice(self._memory, size=sample_size, replace=False)
-        x = dataset[:, 0]
-        y = dataset[:, 1]
+        if sample_size >= len(self._memory):
+            x = np.asarray([x for (x, y) in self._memory], dtype=np.float32)
+            y = np.asarray([y for (x, y) in self._memory], dtype=np.float32)
+        else:
+            indices = np.random.choice(len(self._memory), size=sample_size, replace=False)
+            x = np.asarray([x for (x, y) in self._memory], dtype=np.float32)[indices]
+            y = np.asarray([y for (x, y) in self._memory], dtype=np.float32)[indices]
         return self.model.fit(x, y, **kwargs)
+
+    def value_of_state(self, state: State) -> float:
+        return self.model.predict(np.expand_dims(state, axis=0))
+
+    def value_of_states(self, states: List[State]) -> np.ndarray:
+        return self.model.predict(np.asarray(states, dtype=np.float32))
+
+    def value_of_state_action(self, state: State, action: Action) -> float:
+        state = self.env.get_state_with_action(state, action)
+        return self.model.predict(np.expand_dims(state, axis=0))
+
+    def value_of_state_actions(self, state: State, actions: List[Action]) -> np.ndarray:
+        states = np.asarray([self.env.get_state_with_action(state, action) for action in actions], dtype=np.float32)
+        return self.model.predict(states)
 
     @property
     def greedy_model_policy(self) -> Policy:
-        return greedy_action_values(self.model.predict)
+        def policy(env: AbstractEnvironment) -> Action:
+            s = env.get_state_copy()
+            legal_actions = env.get_possible_actions()
+            return legal_actions[np.argmax(self.value_of_state_actions(s, legal_actions))]
+        return policy
 
     def produce_metrics(self, episode: Episode):
         self.metrics["episode.reward"].append(sum([r for (state, action, r) in episode]))

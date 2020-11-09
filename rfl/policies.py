@@ -1,4 +1,4 @@
-from rl_connect.abstract_environment import AbstractEnvironment, Action, State
+from rfl.abstract_environment import AbstractEnvironment, Action, State
 
 from typing import Callable
 
