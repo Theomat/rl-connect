@@ -91,16 +91,23 @@ class ConnectEnvironment(AbstractEnvironment):
         return reward
 
 
-def human_player(env: ConnectEnvironment, player: int) -> Action:
-    state = env.get_state_copy()
-    s = " " + "  ".join([str(x) for x in range(state.shape[0])]) + " "
-    for y in range(state.shape[1]):
+def game_to_string(state: State, player: int) -> str:
+    s = " " + "  ".join([str(x) for x in range(state.shape[0])]) + " \n"
+    for y in reversed(range(state.shape[1])):
         for x in range(state.shape[0]):
             if state[x, y, player] == 1:
                 s += " X "
             elif state[x, y, 1 - player] == 1:
                 s += " O "
-    print(s)
+            else:
+                s += "   "
+        s += "\n"
+    return s
+
+
+def human_player(env: ConnectEnvironment, player: int) -> Action:
+    state = env.get_state_copy()
+    print(game_to_string(state, player))
     chosen = -1
     legal = env.get_possible_actions()
     while chosen not in legal:
