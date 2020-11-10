@@ -19,7 +19,7 @@ class SemiGradientSARSALearner(AbstractModelLearner):
         tau: int = 0
         t: int = n - 1  # t in [n- 1; T - 2 + n]
         rewards = [r for (s, a, r) in episode]
-        values = self.value_of_states([state for (state, a, r) in episode[n:]]) if len(episode) > n else []
+        values = self.value_of_states([state for (state, a, r) in episode[n:]])
         # len(values) = T + 1 - n
         while tau != T - 1:
             G = np.sum([self.gamma**(i-tau-1) * rewards[i] for i in range(tau + 1, min(tau + n, T) + 1)])

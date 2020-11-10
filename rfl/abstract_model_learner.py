@@ -75,7 +75,7 @@ class AbstractModelLearner(ABC):
         return self.model.predict(np.expand_dims(state, axis=0))
 
     def value_of_states(self, states: List[State]) -> np.ndarray:
-        if states:
+        if len(states) > 0:
             return self.model.predict(np.asarray(states, dtype=np.float32))
         else:
             return []
@@ -85,10 +85,7 @@ class AbstractModelLearner(ABC):
         return self.model.predict(np.expand_dims(state, axis=0))
 
     def value_of_state_actions(self, state: State, actions: List[Action]) -> np.ndarray:
-        if actions:
-            return self.value_of_states([self.env.get_state_with_action(state.copy(), action) for action in actions])
-        else:
-            return []
+        return self.value_of_states([self.env.get_state_with_action(state.copy(), action) for action in actions])
 
     @property
     def greedy_model_policy(self) -> Policy:
