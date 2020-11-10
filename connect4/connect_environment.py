@@ -89,3 +89,20 @@ class ConnectEnvironment(AbstractEnvironment):
         if not self.closed and self.other_player and self.turn != self.player:
             self.do_action(self.other_player(self, self.turn))
         return reward
+
+
+def human_player(env: ConnectEnvironment, player: int) -> Action:
+    state = env.get_state_copy()
+    s = " " + "  ".join([str(x) for x in range(state.shape[0])]) + " "
+    for y in range(state.shape[1]):
+        for x in range(state.shape[0]):
+            if state[x, y, player] == 1:
+                s += " X "
+            elif state[x, y, 1 - player] == 1:
+                s += " O "
+    print(s)
+    chosen = -1
+    legal = env.get_possible_actions()
+    while chosen not in legal:
+        chosen = int(input("Action ?"))
+    return chosen
