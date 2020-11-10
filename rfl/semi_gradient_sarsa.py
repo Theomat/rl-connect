@@ -14,7 +14,7 @@ class SemiGradientSARSALearner(AbstractModelLearner):
 
     def episode_to_dataset(self, episode: Episode) -> List[Tuple[np.ndarray, np.ndarray]]:
         dataset = []
-        T = len(episode)
+        T = len(episode) - 1
         n = self.steps
         tau = 0
         t = 0
@@ -27,4 +27,5 @@ class SemiGradientSARSALearner(AbstractModelLearner):
                 if tau + n < T:
                     G += self.gamma**n * values[t]
                 dataset.append((episode[tau][0], G))
+            t += 1
         return dataset
