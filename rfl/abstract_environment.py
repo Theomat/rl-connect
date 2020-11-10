@@ -3,8 +3,6 @@ from typing import List, Callable, ClassVar, TypeVar, Tuple, Iterable
 
 import numpy as np
 
-from tqdm.auto import trange
-
 EnvType = TypeVar('EnvType')
 State = np.ndarray
 Action = int
@@ -71,7 +69,7 @@ class AbstractEnvironment(ABC):
         A list of episodes, an episode is the list of (state, action, reward) from this episode.
         """
         episodes = []
-        for i in trange(n, desc="episode"):
+        for i in range(n):
             episode = []
             self.reset()
             while not self.is_closed():
