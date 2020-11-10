@@ -8,16 +8,23 @@ import numpy as np
 
 
 class SemiGradientSARSALearner(AbstractModelLearner):
-    def configure(self, gamma, **kwargs):
+    def configure(self, gamma: float, steps: int = 1, **kwargs):
         self.gamma = gamma
+        self.steps = steps
 
     def episode_to_dataset(self, episode: Episode) -> List[Tuple[np.ndarray, np.ndarray]]:
         dataset = []
-        values = self.value_of_states([state for (state, a, r) in episode[1:]])
-        for i, (state, action, reward) in enumerate(reversed(episode)):
-            if i == 0:
-                dataset.append((state, reward))
-            else:
-                dataset.append((state, reward + self.gamma * values[-i]))
-
+        T = len(episode)
+        n = self.steps
+        tau = 0
+        t = 0
+        rewards = [r for (s, a, r) in episode]
+        values = self.value_of_states([state for (state, a, r) in episode[n:]])
+        while tau != T - 1:
+            tau = t - n + 1
+            if tau >= 0:
+                G = np.sum([self.gamma**(i-tau-1) * rewards[i] for i in range(tau + 1, min(tau + n, T) + 1)])
+                if tau + n < T:
+                    G += self.gamma**n * values[t]
+                dataset.append((episode[tau][0], G))
         return dataset
