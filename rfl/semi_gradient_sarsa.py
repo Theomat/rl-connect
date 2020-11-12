@@ -1,18 +1,21 @@
-from rfl.abstract_model_learner import AbstractModelLearner
+from rfl.abstract_state_model_learner import AbstractStateModelLearner
 from rfl.abstract_replay_buffer import SARSTuple
 
+
+import torch
 
 from typing import List, Tuple
 
 import numpy as np
 
 
-class SemiGradientSARSALearner(AbstractModelLearner):
-    def configure(self, gamma: float, batch_size: int, loss_fn, steps: int = 1, **kwargs):
+class SemiGradientSARSALearner(AbstractStateModelLearner):
+    def configure(self, gamma: float, batch_size: int, loss_fn, steps: int = 1, device: str = 'cpu', **kwargs):
         self.gamma = gamma
         self.steps = steps
         self.batch_size = batch_size
         self.loss_fn = loss_fn
+        super(SemiGradientSARSALearner, self).configure(device)
 
     def train(self, **kwargs):
         transitions: List[SARSTuple] = self.replay_buffer.sample(self.batch_size, self.steps)
@@ -23,8 +26,9 @@ class SemiGradientSARSALearner(AbstractModelLearner):
             Y.append(y)
         # Dataset is now ready
         X = np.asarray(X, dtype=np.float32)
-        y_true = np.asarray(Y, dtype=np.float32)
-
+        Y = np.asarray(Y, dtype=np.float32)
+        X = torch.FloatTensor(X).to(self.device)
+        y_true = torch.FloatTensor(Y).to(self.device)
         # Actual learning
         self.model.zero_grad()
         y_pred = self.model(X)

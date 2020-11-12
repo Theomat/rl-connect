@@ -3,7 +3,7 @@ from rfl.abstract_replay_buffer import AbstractReplayBuffer, SARSTuple
 
 from typing import List
 
-import numyp as np
+import numpy as np
 
 
 class UniformReplayBuffer(AbstractReplayBuffer):
@@ -15,10 +15,11 @@ class UniformReplayBuffer(AbstractReplayBuffer):
         self._episodes: List[Episode] = []
 
     def store(self, episodes: List[Episode]):
-        i = len(episodes)
+        i = len(self._episodes)
         for episode in episodes:
-            for j, (state, action, reward) in reversed(enumerate(episode)):
-                self._memory.append((i, j, state, action, reward))
+            T = len(episode) - 1
+            for j, (state, action, reward) in enumerate(reversed(episode)):
+                self._memory.append((i, T - j, state, action, reward))
             self._episodes.append(episode)
             i += 1
         if len(self._memory) > self._size:

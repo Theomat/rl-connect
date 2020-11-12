@@ -2,7 +2,7 @@ from rfl.abstract_environment import AbstractEnvironment, Episode
 from rfl.abstract_replay_buffer import AbstractReplayBuffer
 from rfl.policies import Policy
 
-from tying import List
+from typing import List
 
 from abc import ABC, abstractmethod
 
@@ -17,12 +17,11 @@ class AbstractModelLearner(ABC):
             "episode.length": []
         }
 
-    @abstractmethod
-    def configure(self, **kwargs):
+    def configure(self, device: str = 'cpu', **kwargs):
         """
         Method to call to the configure the model learner.
         """
-        pass
+        self.device = device
 
     def produce_episodes(self, policy: Policy, episodes: int) -> None:
         """
@@ -44,8 +43,8 @@ class AbstractModelLearner(ABC):
         self.metrics["episode.reward"].append(sum([r for (state, action, r) in episode]))
         self.metrics["episode.length"].append(len(episode))
 
-    @abstractmethod
     @property
+    @abstractmethod
     def greedy_model_policy(self) -> Policy:
         """
         Return the greedy policy following this model.

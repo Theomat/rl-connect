@@ -2,9 +2,9 @@ from rfl.abstract_environment import Episode, Action, State, Transition
 
 
 from abc import ABC, abstractmethod
-from typing import List, Tuple, TypeVar, Any
+from typing import List, Tuple, Any
 
-SARSTuple = TypeVar('SARSTuple', Tuple[State, Action, float, List[Transition], Any])
+SARSTuple = Tuple[State, Action, float, List[Transition], Any]
 
 
 class AbstractReplayBuffer(ABC):
