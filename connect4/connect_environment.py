@@ -63,10 +63,13 @@ class ConnectEnvironment(Abstract2PlayerEnvironment):
         turn = self.turn
         y = self.__top__(action)
         if y == -1:
-            raise Exception("Fatal error: invalid action !")
+            self.winner = 1 - turn
+            return
         self._state[action, y, turn] = 1
 
     def _check_is_closed_from_action_(self, action: Action):
+        if self.is_closed():
+            return
         y = self.__top__(action)
         if y == -1:
             y = self._state.shape[1] - 1
