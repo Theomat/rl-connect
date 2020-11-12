@@ -80,9 +80,10 @@ class Abstract2PlayerEnvironment(AbstractEnvironment, ABC):
 
         self._check_is_closed_from_action_(action)
         reward = self.play_reward
-        if self.is_closed():
-            reward = self.win_reward * (1 if self.winner == self.player else -1)
-        else:
+        if not self.is_closed():
             self.next_turn()
             self.play_second_player()
+
+        if self.is_closed():
+            reward = self.win_reward * (1 if self.winner == self.player else -1)
         return reward
