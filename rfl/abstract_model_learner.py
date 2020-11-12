@@ -33,6 +33,8 @@ class AbstractModelLearner(ABC):
         - **episodes**: the number of episodes to produce
         """
         episodes: List[Episode] = self.env.do_episodes(policy, n=episodes)
+        for episode in episodes:
+            self.produce_metrics(episode)
         self.replay_buffer.store(episodes)
 
     @abstractmethod

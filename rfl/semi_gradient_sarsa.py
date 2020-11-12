@@ -32,7 +32,7 @@ class SemiGradientSARSALearner(AbstractStateModelLearner):
         # Actual learning
         self.model.zero_grad()
         y_pred = self.model(X)
-        loss = self.loss_fn(y_pred, y_true)
+        loss = self.loss_fn(y_pred.flatten(), y_true)
         return loss
 
     def _transition_to_dataset_(self, transition: SARSTuple) -> Tuple[np.ndarray, float]:

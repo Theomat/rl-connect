@@ -26,9 +26,10 @@ class UniformReplayBuffer(AbstractReplayBuffer):
             self._memory = self._memory[-self._size:]
 
     def sample(self, size: int, nsteps: int) -> List[SARSTuple]:
-        memories = self.generator.choice(self._memory, size)
+        memories = self.generator.integers(0, len(self._memory), size, dtype=np.int)
         output = []
-        for (episode_index, index, state, action, reward) in memories:
+        for g_index in memories:
+            (episode_index, index, state, action, reward) = self._memory[g_index]
             afterwards = []
             episode = self._episodes[episode_index]
             i = index
