@@ -13,6 +13,20 @@ Episode = List[Transition]
 class AbstractEnvironment(ABC):
     action_space: ClassVar[Tuple[Action]] = ()
 
+    def __init__(self, initial_state):
+        self._state = initial_state
+        self._saves = []
+
+    def set_state(self, state: State):
+        """
+        Set the state of the environment to the specified state.
+
+        Parameters
+        -----------
+        - **state**: the new state of this environment
+        """
+        self._state = state
+
     @abstractmethod
     def reset(self):
         """
@@ -27,19 +41,30 @@ class AbstractEnvironment(ABC):
         """
         pass
 
-    @abstractmethod
+    def push(self):
+        """Save the current state of the environment to restore it later."""
+        self._saves.append(self.get_state_copy())
+
+    def pop(self):
+        """Restore the current state of the environment to a previous state."""
+        self.set_state(self._saves.pop(-1))
+
     def get_state_copy(self) -> State:
         """
         Get a state copy of this environment as a numpy array.
         """
-        pass
+        return self._state.copy()
 
-    @abstractmethod
     def get_state_with_action(self, state: State, action: Action) -> State:
         """
         Get a state copy of this environment with the specified action taken as a numpy array.
         """
-        pass
+        self.push()
+        self.set_state(state)
+        self.do_action(action)
+        output = self._state
+        self.pop()
+        return output
 
     @abstractmethod
     def do_action(self, action: Action) -> float:

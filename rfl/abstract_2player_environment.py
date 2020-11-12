@@ -6,13 +6,21 @@ from typing import Callable
 
 class Abstract2PlayerEnvironment(AbstractEnvironment, ABC):
 
-    def __init__(self, player: int = 0):
+    def __init__(self, initial_state: State, player: int = 0):
+        super(Abstract2PlayerEnvironment, self).__init__(initial_state)
+        self._initial_board = initial_state.copy()
         self.player: int = 0
         self.turn: int = 0
         self.other_player: Callable[[State, int], int] = None
-        self.winner: int = 0
+        self.winner: int = -1
         self.play_reward: float = 0
         self.win_reward: float = 1
+        self.draw_reward: float = 0
+
+    def reset(self):
+        self.set_state(self._initial_board.copy())
+        self.turn = 0
+        self.winner = -1
 
     @abstractmethod
     def get_flipped_state_copy(self) -> State:
@@ -24,7 +32,7 @@ class Abstract2PlayerEnvironment(AbstractEnvironment, ABC):
     @abstractmethod
     def get_flipped_state_with_action(self, state: State, action: Action) -> State:
         """
-        Get a flipped state copy of this environment with the specified action taken (before flipping) as a numpy array.
+        Get a flipped state with the specified action taken (before flipping) as a numpy array.
         """
         pass
 
@@ -74,7 +82,7 @@ class Abstract2PlayerEnvironment(AbstractEnvironment, ABC):
         pass
 
     def do_action(self, action: Action) -> float:
-        if self.closed:
+        if self.is_closed():
             raise Exception("Fatal error: game is already closed !")
         self._push_action_(action)
 
@@ -85,5 +93,20 @@ class Abstract2PlayerEnvironment(AbstractEnvironment, ABC):
             self.play_second_player()
 
         if self.is_closed():
-            reward = self.win_reward * (1 if self.winner == self.player else -1)
+            if self.winner == self.player:
+                reward = self.win_reward
+            elif abs(self.winner - self.player) == 1:
+                reward = -self.win_reward
+            else:
+                reward = self.draw_reward
         return reward
+
+    def is_closed(self) -> bool:
+        return self.winner >= 0
+
+    def push(self):
+        self._saves.append([self.get_state_copy(), self.turn, self.winner])
+
+    def pop(self):
+        state, self.turn, self.winner = self._saves.pop(-1)
+        self.set_state(state)
