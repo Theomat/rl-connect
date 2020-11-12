@@ -12,17 +12,17 @@ import numpy as np
 class AbstractStateModelLearner(AbstractModelLearner, ABC):
 
     def value_of_state(self, state: State) -> float:
-        return self.model.predict(np.expand_dims(state, axis=0))
+        return self.model(np.expand_dims(state, axis=0))
 
     def value_of_states(self, states: List[State]) -> np.ndarray:
         if len(states) > 0:
-            return self.model.predict(np.asarray(states, dtype=np.float32))
+            return self.model(np.asarray(states, dtype=np.float32))
         else:
             return []
 
     def value_of_state_action(self, state: State, action: Action) -> float:
         state = self.env.get_state_with_action(state.copy(), action)
-        return self.model.predict(np.expand_dims(state, axis=0))
+        return self.model(np.expand_dims(state, axis=0))
 
     def value_of_state_actions(self, state: State, actions: List[Action]) -> np.ndarray:
         return self.value_of_states([self.env.get_state_with_action(state.copy(), action) for action in actions])
