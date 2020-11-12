@@ -54,6 +54,7 @@ def simple_policy(env: Abstract2PlayerEnvironment, player: int) -> Action:
         env.push()
         env.do_action(action)
         if env.is_closed() and env.winner == player:
+            env.pop()
             return action
         env.pop()
     return np.random.choice(actions)
