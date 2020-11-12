@@ -1,4 +1,4 @@
-from rfl.abstract_environment import AbstractEnvironment, Episode, Action, State
+from rfl.abstract_environment import AbstractEnvironment, Episode
 from rfl.abstract_replay_buffer import AbstractReplayBuffer, SARSTuple
 from rfl.policies import Policy
 
@@ -61,30 +61,14 @@ class AbstractModelLearner(ABC):
         x, y, w = self._transitions_to_dataset_(transitions)
         return self.model.fit(x, y, sample_weight=w, **kwargs)
 
-    def value_of_state(self, state: State) -> float:
-        return self.model.predict(np.expand_dims(state, axis=0))
-
-    def value_of_states(self, states: List[State]) -> np.ndarray:
-        if len(states) > 0:
-            return self.model.predict(np.asarray(states, dtype=np.float32))
-        else:
-            return []
-
-    def value_of_state_action(self, state: State, action: Action) -> float:
-        state = self.env.get_state_with_action(state.copy(), action)
-        return self.model.predict(np.expand_dims(state, axis=0))
-
-    def value_of_state_actions(self, state: State, actions: List[Action]) -> np.ndarray:
-        return self.value_of_states([self.env.get_state_with_action(state.copy(), action) for action in actions])
-
-    @property
-    def greedy_model_policy(self) -> Policy:
-        def policy(env: AbstractEnvironment) -> Action:
-            s = env.get_state_copy()
-            legal_actions = env.get_possible_actions()
-            return legal_actions[np.argmax(self.value_of_state_actions(s, legal_actions))]
-        return policy
-
     def produce_metrics(self, episode: Episode):
         self.metrics["episode.reward"].append(sum([r for (state, action, r) in episode]))
         self.metrics["episode.length"].append(len(episode))
+
+    @abstractmethod
+    @property
+    def greedy_model_policy(self) -> Policy:
+        """
+        Return the greedy policy following this model.
+        """
+        pass
