@@ -1,4 +1,5 @@
 from rfl.abstract_environment import AbstractEnvironment, Action, State
+from rfl.abstract_2player_environment import Abstract2PlayerEnvironment
 
 from typing import Callable
 
@@ -32,6 +33,30 @@ def epsilon_greedy(epsilon: float, greedy_policy: Policy, seed=None) -> Policy:
             return greedy_policy(env)
 
     return f
+
+
+def random_policy(env: AbstractEnvironment) -> Action:
+    """
+    The random policy, it uses the global PRNG of numpy.
+    It takes a random legal actions.
+    """
+    actions = list(env.get_possible_actions())
+    return np.random.choice(actions)
+
+
+def simple_policy(env: Abstract2PlayerEnvironment) -> Action:
+    """
+    A policy that, if able to win by doing a legal action will so, otherwise it will play randomly.
+    Currently restricted to 2 player games.
+    """
+    actions = list(env.get_possible_actions())
+    for action in actions:
+        env.push()
+        env.do_action(action)
+        if env.is_closed() and abs(env.winner - env.player) == 1:
+            return action
+        env.pop()
+    return np.random.choice(actions)
 
 
 def greedy_action_values(action_values: Callable[[State], np.ndarray]) -> Policy:
