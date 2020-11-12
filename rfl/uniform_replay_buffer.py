@@ -10,18 +10,29 @@ class UniformReplayBuffer(AbstractReplayBuffer):
 
     def __init__(self, size: int = 10000, seed: int = 0):
         self._size: int = size
-        self._memory: List[SARSTuple] = []
+        self._memory: List = []
         self.generator: np.random.Generator = np.random.default_rng(seed)
+        self._episodes: List[Episode] = []
 
     def store(self, episodes: List[Episode]):
+        i = len(episodes)
         for episode in episodes:
-            next_state = None
-            for (state, action, reward) in reversed(episode):
-                self._memory.append((state, action, reward, next_state))
-                next_state = state
-
+            for j, (state, action, reward) in reversed(enumerate(episode)):
+                self._memory.append((i, j, state, action, reward))
+            self._episodes.append(episode)
+            i += 1
         if len(self._memory) > self._size:
             self._memory = self._memory[-self._size:]
 
-    def sample(self, size: int) -> List[SARSTuple]:
-        return self.generator.choice(self._memory, size)
+    def sample(self, size: int, nsteps: int) -> List[SARSTuple]:
+        memories = self.generator.choice(self._memory, size)
+        output = []
+        for (episode_index, index, state, action, reward) in memories:
+            afterwards = []
+            episode = self._episodes[episode_index]
+            i = index
+            for j in range(1, nsteps):
+                if i + j < len(episode):
+                    afterwards.append(episode[i + j])
+            output.append((state, action, reward, afterwards, None))
+        return output

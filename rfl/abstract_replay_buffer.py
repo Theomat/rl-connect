@@ -1,23 +1,22 @@
-from rfl.abstract_environment import Episode, Action, State
+from rfl.abstract_environment import Episode, Action, State, Transition
 
 
 from abc import ABC, abstractmethod
-from typing import List, Optional, Tuple, TypeVar
+from typing import List, Tuple, TypeVar, Any
 
-SARSTuple = TypeVar('SARSTuple',
-                    Tuple[State, Action, float, Optional[State]],
-                    Tuple[State, Action, float, Optional[State], float])
+SARSTuple = TypeVar('SARSTuple', Tuple[State, Action, float, List[Transition], Any])
 
 
 class AbstractReplayBuffer(ABC):
     @abstractmethod
-    def sample(self, size: int, **kwargs: dict) -> List[SARSTuple]:
+    def sample(self, size: int, nsteps: int, **kwargs: dict) -> List[SARSTuple]:
         """
         Sample the specified number of transitions from this buffer.
 
         Parameters
         -----------
         - **size**: the number of transitions to be sampled
+        - **nsteps**: the number of future steps to get
 
         Return
         -----------

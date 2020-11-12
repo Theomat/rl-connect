@@ -1,20 +1,16 @@
 from rfl.abstract_environment import AbstractEnvironment, Episode
-from rfl.abstract_replay_buffer import AbstractReplayBuffer, SARSTuple
+from rfl.abstract_replay_buffer import AbstractReplayBuffer
 from rfl.policies import Policy
 
+from tying import List
+
 from abc import ABC, abstractmethod
-from typing import List, Tuple, Optional
-
-from tensorflow.keras import Model
-from tensorflow.keras.callbacks import History
-
-import numpy as np
 
 
 class AbstractModelLearner(ABC):
-    def __init__(self, env: AbstractEnvironment, model: Model, replay_buffer: AbstractReplayBuffer):
+    def __init__(self, env: AbstractEnvironment, model, replay_buffer: AbstractReplayBuffer):
         self.env: AbstractEnvironment = env
-        self.model: Model = model
+        self.model = model
         self.replay_buffer: AbstractReplayBuffer = replay_buffer
         self.metrics: dict[str, float] = {
             "episode.reward": [],
@@ -41,25 +37,8 @@ class AbstractModelLearner(ABC):
         self.replay_buffer.store(episodes)
 
     @abstractmethod
-    def _transitions_to_dataset_(self, transitions: List[SARSTuple]) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
-        """
-        Transform a list of transitions into a dataset.
-
-        Parameters
-        -----------
-        - **transitions**: the transitions to be converted
-
-        Return
-        -----------
-        The tuple (X, y, w) which is the training dataset.
-        w may be None and is the weight of each example.
-        """
+    def train(self, **kwargs: dict):
         pass
-
-    def train(self, sample_size: int, **kwargs) -> History:
-        transitions: List[SARSTuple] = self.replay_buffer.sample(sample_size)
-        x, y, w = self._transitions_to_dataset_(transitions)
-        return self.model.fit(x, y, sample_weight=w, **kwargs)
 
     def produce_metrics(self, episode: Episode):
         self.metrics["episode.reward"].append(sum([r for (state, action, r) in episode]))
