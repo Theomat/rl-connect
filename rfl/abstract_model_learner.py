@@ -1,8 +1,9 @@
 from rfl.abstract_environment import AbstractEnvironment, Episode, Action, State
+from rfl.abstract_replay_buffer import AbstractReplayBuffer, SARSTuple
 from rfl.policies import Policy
 
 from abc import ABC, abstractmethod
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from tensorflow.keras import Model
 from tensorflow.keras.callbacks import History
@@ -11,11 +12,10 @@ import numpy as np
 
 
 class AbstractModelLearner(ABC):
-    def __init__(self, env: AbstractEnvironment, model: Model, memory_size: int):
+    def __init__(self, env: AbstractEnvironment, model: Model, replay_buffer: AbstractReplayBuffer):
         self.env: AbstractEnvironment = env
         self.model: Model = model
-        self._memory: List[Tuple[np.ndarray, np.ndarray]] = []
-        self.memory_size: int = memory_size
+        self.replay_buffer: AbstractReplayBuffer = replay_buffer
         self.metrics: dict[str, float] = {
             "episode.reward": [],
             "episode.length": []
@@ -38,38 +38,28 @@ class AbstractModelLearner(ABC):
         - **episodes**: the number of episodes to produce
         """
         episodes: List[Episode] = self.env.do_episodes(policy, n=episodes)
-        for episode in episodes:
-            for x, y in self.episode_to_dataset(episode):
-                self._memory.append((x, y))
-            self.produce_metrics(episode)
-        # Trim if memory is too big
-        if len(self._memory) > self.memory_size:
-            self._memory = self._memory[-self.memory_size:]
+        self.replay_buffer.store(episodes)
 
     @abstractmethod
-    def episode_to_dataset(self, episode: Episode) -> List[Tuple[np.ndarray, np.ndarray]]:
+    def _transitions_to_dataset_(self, transitions: List[SARSTuple]) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
         """
-        Transform an episode into a list of data points X, Y.
+        Transform a list of transitions into a dataset.
 
         Parameters
         -----------
-        - **episode**: the episode to be converted
+        - **transitions**: the transitions to be converted
 
         Return
         -----------
-        The list of tuples (X, y) that the model should learn.
+        The tuple (X, y, w) which is the training dataset.
+        w may be None and is the weight of each example.
         """
         pass
 
     def train(self, sample_size: int, **kwargs) -> History:
-        if sample_size >= len(self._memory):
-            x = np.asarray([x for (x, y) in self._memory], dtype=np.float32)
-            y = np.asarray([y for (x, y) in self._memory], dtype=np.float32)
-        else:
-            indices = np.random.choice(len(self._memory), size=sample_size, replace=False)
-            x = np.asarray([x for (x, y) in self._memory], dtype=np.float32)[indices]
-            y = np.asarray([y for (x, y) in self._memory], dtype=np.float32)[indices]
-        return self.model.fit(x, y, **kwargs)
+        transitions: List[SARSTuple] = self.replay_buffer.sample(sample_size)
+        x, y, w = self._transitions_to_dataset_(transitions)
+        return self.model.fit(x, y, sample_weight=w, **kwargs)
 
     def value_of_state(self, state: State) -> float:
         return self.model.predict(np.expand_dims(state, axis=0))
