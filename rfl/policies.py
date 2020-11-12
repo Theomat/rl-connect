@@ -44,7 +44,7 @@ def random_policy(env: AbstractEnvironment) -> Action:
     return np.random.choice(actions)
 
 
-def simple_policy(env: Abstract2PlayerEnvironment) -> Action:
+def simple_policy(env: Abstract2PlayerEnvironment, player: int) -> Action:
     """
     A policy that, if able to win by doing a legal action will so, otherwise it will play randomly.
     Currently restricted to 2 player games.
@@ -53,7 +53,7 @@ def simple_policy(env: Abstract2PlayerEnvironment) -> Action:
     for action in actions:
         env.push()
         env.do_action(action)
-        if env.is_closed() and abs(env.winner - env.player) == 1:
+        if env.is_closed() and env.winner == player:
             return action
         env.pop()
     return np.random.choice(actions)
