@@ -29,11 +29,11 @@ class UniformReplayBuffer(AbstractReplayBuffer):
         memories = self.generator.integers(0, len(self._memory), size, dtype=np.int)
         output = []
         for g_index in memories:
-            (episode_index, index, state, action, reward) = self._memory[g_index]
+            (episode_index, memory_index, state, action, reward) = self._memory[g_index]
             afterwards = []
             episode = self._episodes[episode_index]
-            i = index
-            for j in range(1, nsteps):
+            i = memory_index
+            for j in range(1, nsteps + 1):
                 if i + j < len(episode):
                     afterwards.append(episode[i + j])
             output.append((state, action, reward, afterwards, None))

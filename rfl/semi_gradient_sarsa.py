@@ -54,8 +54,8 @@ class SemiGradientSARSALearner(AbstractStateModelLearner):
     def _transition_to_dataset_(self, transition: SARSTuple) -> Tuple[np.ndarray, float, Optional[float]]:
         (state, action, reward, afterwards, w) = transition
         T: int = len(afterwards)
-        rewards = [r for (s, a, r) in afterwards]
-        G = np.sum([self.gamma**(i) * rewards[i] for i in range(min(T, self.steps - 1))])
+        G = reward + np.sum([self.gamma**(i + 1) * r for i, (s, a, r) in enumerate(afterwards[:-1])])
         if T == self.steps:
-            G += self.gamma**self.steps * self.value_of_state(afterwards[-1][0])
+            last_state = afterwards[-1][0].copy()
+            G += self.gamma**self.steps * self.value_of_state(last_state).detach().numpy()
         return state, G, w
