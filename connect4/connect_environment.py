@@ -1,5 +1,5 @@
-from rfl.abstract_environment import Action, State
-from rfl.abstract_2player_environment import Abstract2PlayerEnvironment
+from rfl.env.abstract_environment import Action, State
+from rfl.env.abstract_2player_environment import Abstract2PlayerEnvironment
 
 from typing import Tuple, ClassVar, List
 
