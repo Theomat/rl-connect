@@ -14,7 +14,8 @@ class AbstractModelLearner(ABC):
         self.replay_buffer: AbstractReplayBuffer = replay_buffer
         self.metrics: dict[str, float] = {
             "episode.reward": [],
-            "episode.length": []
+            "episode.length": [],
+            "training.loss": []
         }
 
     def configure(self, device: str = 'cpu', **kwargs):
