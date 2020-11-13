@@ -39,13 +39,14 @@ class SemiGradientSARSALearner(AbstractStateModelLearner):
         # Actual learning
         self.model.zero_grad()
         y_pred = self.model(X)
-        if weights:
-            loss = self.loss_fn(y_pred.flatten(), y_true, reduction=None)
-            loss = torch.mean(loss * weights)
+        if W:
+            loss = self.loss_fn(y_pred.flatten(), y_true, reduction='none')
+            ef_loss = torch.mean(loss * weights)
         else:
             loss = self.loss_fn(y_pred.flatten(), y_true)
+            ef_loss = loss
         self.optimizer.zero_grad()
-        loss.backward()
+        ef_loss.backward()
         self.optimizer.step()
         nloss = loss.detach().numpy()
         self.metrics["training.loss"].append(np.mean(nloss))
