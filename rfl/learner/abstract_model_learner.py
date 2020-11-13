@@ -1,4 +1,4 @@
-from rfl.abstract_environment import AbstractEnvironment, Episode
+from rfl.env.abstract_environment import AbstractEnvironment, Episode
 from rfl.abstract_replay_buffer import AbstractReplayBuffer
 from rfl.policies import Policy
 

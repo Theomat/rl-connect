@@ -1,4 +1,4 @@
-from rfl.abstract_environment import AbstractEnvironment, Action, State
+from rfl.env.abstract_environment import AbstractEnvironment, Action, State
 
 from abc import ABC, abstractmethod
 from typing import Callable

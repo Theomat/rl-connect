@@ -1,5 +1,5 @@
-from rfl.abstract_environment import AbstractEnvironment, Action, State
-from rfl.abstract_model_learner import AbstractModelLearner
+from rfl.env.abstract_environment import AbstractEnvironment, Action, State
+from rfl.learner.abstract_model_learner import AbstractModelLearner
 
 
 from abc import ABC, abstractmethod

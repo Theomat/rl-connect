@@ -1,4 +1,4 @@
-from rfl.abstract_state_model_learner import AbstractStateModelLearner
+from rfl.learner.abstract_state_model_learner import AbstractStateModelLearner
 from rfl.abstract_replay_buffer import SARSTuple
 
 

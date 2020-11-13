@@ -1,4 +1,4 @@
-from rfl.abstract_environment import Episode
+from rfl.env.abstract_environment import Episode
 from rfl.abstract_replay_buffer import AbstractReplayBuffer, SARSTuple
 
 from typing import List

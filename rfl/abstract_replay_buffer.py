@@ -1,4 +1,4 @@
-from rfl.abstract_environment import Episode, Action, State, Transition
+from rfl.env.abstract_environment import Episode, Action, State, Transition
 
 
 from abc import ABC, abstractmethod
