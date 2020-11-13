@@ -64,6 +64,7 @@ class ConnectEnvironment(Abstract2PlayerEnvironment):
         y = self.__top__(action)
         if y == -1:
             self.winner = 1 - turn
+            print("Illegal move: making Player ", turn, "lose")
             return
         self._state[turn, action, y] = 1
 
@@ -78,7 +79,7 @@ class ConnectEnvironment(Abstract2PlayerEnvironment):
         for (vx, vy) in ConnectEnvironment.directions:
             if self.__count_dir__(action, y, self.turn, vx, vy) >= 4:
                 self.winner = self.turn
-                break
+                return
 
         if np.sum(self._state) == 42:
             self.winner = 9999
