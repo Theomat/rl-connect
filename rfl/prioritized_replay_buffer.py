@@ -53,20 +53,21 @@ class PrioritizedReplayBuffer(AbstractReplayBuffer):
         # Now retrieve
         output = []
         weights = []
+        probabilities *= size
+        weights = np.power(probabilities, -self.beta, out=probabilities)
+        weights /= np.max(weights)
         for g_index in memories:
             (_, episode_uid, memory_index, t) = self._memory[g_index]
             (state, action, reward) = t
-            weight = (1 / (size * probabilities[g_index])) ** self.beta
-            weights.append(weight)
             afterwards = []
             episode = self._episodes[episode_uid]
+
             i = memory_index
             for j in range(1, nsteps + 1):
                 if i + j < len(episode):
                     afterwards.append(episode[i + j])
-            output.append((state, action, reward, afterwards))
-        mw = np.max(weights)
-        return [(s, a, r, aft, w / mw) for (s, a, r, aft), w in zip(output, weights)]
+            output.append((state, action, reward, afterwards, weights[g_index]))
+        return output
 
     def step(self, losses: np.ndarray, beta: float):
         for i in range(losses.shape[0]):
