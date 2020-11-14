@@ -40,4 +40,4 @@ class RefCountedList():
         return [el for (el, _) in self._dict.values()]
 
     def __getitem__(self, key: UID):
-        return self._dict[key]
+        return self._dict[key][0]
