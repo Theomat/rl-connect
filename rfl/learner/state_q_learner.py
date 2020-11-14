@@ -12,7 +12,8 @@ class StateQLearner(SemiGradientSARSALearner):
     def __best_value(self, state: State):
         self.env.push()
         self.env.set_state(state)
-        values = self.value_of_state_with_actions(state, self.env.get_possible_actions()).detach().numpy()
+        self.env.winner = -1
+        values = self.value_of_state_actions(state, self.env.get_possible_actions()).detach().numpy()
         self.env.pop()
         return np.max(values)
 
