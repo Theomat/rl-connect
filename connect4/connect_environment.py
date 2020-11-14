@@ -24,6 +24,10 @@ class ConnectEnvironment(Abstract2PlayerEnvironment):
     def get_flipped_state_copy(self) -> State:
         return self._state.copy()[::-1, :, :]
 
+    def set_state(self, state):
+        super(ConnectEnvironment, self).set_state(state)
+        self.turn = np.sum(self._state[0]) - np.sum(self._state[1])
+
     def get_flipped_state_with_action(self, state: State, action: Action) -> State:
         tmp, self._state = self._state, state
         self._push_action_(action)
