@@ -18,11 +18,17 @@ class AbstractModelLearner(ABC):
             "training.loss": []
         }
 
-    def configure(self, device: str = 'cpu', **kwargs):
+    def setup_training(self, loss_fn, optimizer, batch_size: int = 32, device: str = 'cpu', **kwargs):
+        self.batch_size = batch_size
+        self.loss_fn = loss_fn
+        self.optimizer = optimizer
+        self.device = device
+
+    def configure(self, **kwargs):
         """
         Method to call to the configure the model learner.
         """
-        self.device = device
+        pass
 
     def produce_episodes(self, policy: Policy, episodes: int) -> None:
         """

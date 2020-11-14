@@ -10,13 +10,9 @@ import numpy as np
 
 
 class SemiGradientSARSALearner(AbstractStateModelLearner):
-    def configure(self, loss_fn, optimizer, batch_size: int, gamma: float = 1, steps: int = 1, device: str = 'cpu', **kwargs):
+    def configure(self,  gamma: float = 1, steps: int = 1, **kwargs):
         self.gamma = gamma
         self.steps = steps
-        self.batch_size = batch_size
-        self.loss_fn = loss_fn
-        self.optimizer = optimizer
-        super(SemiGradientSARSALearner, self).configure(device)
 
     def train(self, **kwargs):
         transitions: List[SARSTuple] = self.replay_buffer.sample(self.batch_size, self.steps)
